@@ -1,6 +1,6 @@
 const CACHE_NAME = 'ip-hesap-v1';
 const ASSETS = [
-  './isi_pompasi_hesap.html',
+  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -37,7 +37,7 @@ self.addEventListener('fetch', e => {
       return cached || fetch(e.request).catch(() => {
         // Network yok ve cache'de yok — ana sayfayı döndür
         if (e.request.destination === 'document') {
-          return caches.match('./isi_pompasi_hesap.html');
+          return caches.match('./index.html');
         }
       });
     })
