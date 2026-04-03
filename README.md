@@ -12,7 +12,7 @@ Saha servis teknisyenleri için geliştirilmiş mobil uyumlu hesaplama aracı.
 ## Kullanım
 
 Uygulamayı doğrudan şu adresten açın:  
-👉 `https://KULLANICI_ADIN.github.io/isi-pompasi-hesap/isi_pompasi_hesap.html`
+👉 `https://yapaframo.github.io/isi-pompasi-hesap/isi_pompasi_hesap.html`
 
 Telefonda **"Ana Ekrana Ekle"** seçeneğiyle uygulama gibi kullanılabilir.
 
