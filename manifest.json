@@ -2,7 +2,7 @@
   "name": "Isı Pompası Hesap",
   "short_name": "IP Hesap",
   "description": "Isı pompası kapasite, tank/boyler ve COP analizi hesaplama aracı",
-  "start_url": "./isi_pompasi_hesap.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0f1a",
   "theme_color": "#0072ff",
