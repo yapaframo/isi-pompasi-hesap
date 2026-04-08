@@ -191,7 +191,8 @@ input[type="number"].empty-target:focus{
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('anlik',this)">⚡ Anlık</button>
     <button class="tab-btn" onclick="switchTab('tank',this)">🪣 Tank / Boyler</button>
-    <button class="tab-btn" onclick="switchTab('cop',this)">📊 COP Analizi</button>
+    <button class="tab-btn" onclick="switchTab('cop',this)">📊 COP</button>
+    <button class="tab-btn" onclick="switchTab('cevirim',this)">🔄 Çevirim</button>
   </div>
 </div>
 
@@ -357,6 +358,55 @@ input[type="number"].empty-target:focus{
   </div>
 </div>
 
+<!-- ══════════════ SEKME 4: BİRİM ÇEVİRİM ══════════════ -->
+<div class="tab-panel" id="tab-cevirim">
+  <p class="hint">💡 Herhangi bir değeri gir, diğerleri <span>otomatik hesaplanır</span>.</p>
+
+  <div class="field">
+    <label>HP (Beygir Gücü)</label>
+    <div class="input-row">
+      <input type="number" id="cv_hp" placeholder="örn: 3.5" step="0.01" min="0" oninput="cevirimHesapla('hp')"/>
+      <div class="unit-tag">HP</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>kW (Kilowatt)</label>
+    <div class="input-row">
+      <input type="number" id="cv_kw" placeholder="örn: 9.8" step="0.01" min="0" oninput="cevirimHesapla('kw')"/>
+      <div class="unit-tag">kW</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>kBTU/h (Bin BTU/saat)</label>
+    <div class="input-row">
+      <input type="number" id="cv_kbtu" placeholder="örn: 33.4" step="0.1" min="0" oninput="cevirimHesapla('kbtu')"/>
+      <div class="unit-tag">kBTU/h</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>İndeks</label>
+    <div class="input-row">
+      <input type="number" id="cv_idx" placeholder="örn: 87.5" step="0.1" min="0" oninput="cevirimHesapla('idx')"/>
+      <div class="unit-tag">İndeks</div>
+    </div>
+  </div>
+
+  <!-- Referans bilgi kutusu -->
+  <div style="background:rgba(0,114,255,0.06);border:1px solid rgba(0,114,255,0.2);border-radius:10px;padding:12px 14px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Kullanılan Katsayılar</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <div style="font-size:11px;color:var(--text);">1 HP = <span style="color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;">2.8 kW</span></div>
+      <div style="font-size:11px;color:var(--text);">1 kW = <span style="color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;">3.4121 kBTU/h</span></div>
+      <div style="font-size:11px;color:var(--text);">1 İndeks = <span style="color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;">0.112 kW</span></div>
+      <div style="font-size:11px;color:var(--text);">1 kBTU = <span style="color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:700;">1000 BTU/h</span></div>
+    </div>
+  </div>
+
+</div>
+
 <div class="footer" id="footer-text">
   Q = ṁ · Cp · ΔT &nbsp;|&nbsp; <span>Su için Cp = 4.186 kJ/kg·K</span>
 </div>
@@ -435,7 +485,8 @@ function interpCOP(db, lwt) {
 const FORMULAS = {
   anlik:'Q = ṁ · Cp · ΔT &nbsp;|&nbsp; <span>Su için Cp = 4.186 kJ/kg·K</span>',
   tank: 'Q = m · Cp · ΔT / t &nbsp;|&nbsp; <span>Su için Cp = 4.186 kJ/kg·K</span>',
-  cop:  'COP = Q<sub>ısıl</sub> / W<sub>elec</sub> &nbsp;|&nbsp; <span>3Φ: W = √3·V·I &nbsp; 1Φ: W = V·I</span>'
+  cop:  'COP = Q<sub>ısıl</sub> / W<sub>elec</sub> &nbsp;|&nbsp; <span>3Φ: W = √3·V·I &nbsp; 1Φ: W = V·I</span>',
+  cevirim: '1 HP = 2.8 kW &nbsp;|&nbsp; <span>1 kW = 3.4121 kBTU/h &nbsp;|&nbsp; 1 İndeks = 0.112 kW</span>'
 };
 function switchTab(id,btn) {
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -755,13 +806,52 @@ function det5(l1,v1,l2,v2,l3,v3,l4,v4,l5,v5){
      <div class="detail-item"></div>`;
 }
 
+/* ════════════════════════════════════════
+   SEKME 4 — BİRİM ÇEVİRİM
+   Katsayılar:
+     1 HP  = 2.8 kW
+     1 kW  = 3.41214 kBTU/h
+     1 İdx = 0.112 kW
+════════════════════════════════════════ */
+const CV = { HP_TO_KW: 2.8, KW_TO_KBTU: 3.41214, IDX_TO_KW: 0.112 };
+
+function cevirimHesapla(kaynak) {
+  const el = { hp: document.getElementById('cv_hp'), kw: document.getElementById('cv_kw'), kbtu: document.getElementById('cv_kbtu'), idx: document.getElementById('cv_idx') };
+  const v = parseFloat(el[kaynak].value);
+  if (isNaN(v) || v < 0) {
+    // Boşaltılmışsa hepsini temizle
+    if (el[kaynak].value.trim() === '') { Object.keys(el).filter(k=>k!==kaynak).forEach(k=>{ el[k].value=''; }); }
+    return;
+  }
+
+  let kw;
+  if      (kaynak==='hp')   kw = v * CV.HP_TO_KW;
+  else if (kaynak==='kw')   kw = v;
+  else if (kaynak==='kbtu') kw = v / CV.KW_TO_KBTU;
+  else                       kw = v * CV.IDX_TO_KW;
+
+  const hp   = kw / CV.HP_TO_KW;
+  const kbtu = kw * CV.KW_TO_KBTU;
+  const idx  = kw / CV.IDX_TO_KW;
+
+  if (kaynak !== 'hp')   el.hp.value   = round(hp, 3);
+  if (kaynak !== 'kw')   el.kw.value   = round(kw, 3);
+  if (kaynak !== 'kbtu') el.kbtu.value = round(kbtu, 3);
+  if (kaynak !== 'idx')  el.idx.value  = round(idx, 2);
+}
+
+function round(val, dec) {
+  return parseFloat(val.toFixed(dec));
+}
+
 /* Enter desteği */
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
   const active=document.querySelector('.tab-panel.active');
   if(active.id==='tab-anlik') hesaplaAnlik();
   else if(active.id==='tab-tank') hesaplaTank();
-  else hesaplaCOP();
+  else if(active.id==='tab-cop') hesaplaCOP();
+  // çevirim sekmesinde enter gerekmez, oninput ile anlık çalışıyor
 });
 </script>
 
